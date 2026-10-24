@@ -27,7 +27,8 @@ async def extract(data: dict):
     ydl_opts = {
         'quiet': True,
         'no_warnings': True,
-        'format': 'best', # <--- THIS IS THE FIX: Grabs the best available single file
+        # The fix: Grab best video + best audio, or fallback to best single file
+        'format': 'bv*+ba/b', 
         'cookiefile': cookie_path,
         'extractor_args': {
             'youtube': {
@@ -45,7 +46,8 @@ async def extract(data: dict):
             
             formats = []
             for f in info.get('formats', []):
-                if f.get('url') and f.get('vcodec') != 'none':
+                # Only include formats that have a direct URL
+                if f.get('url'):
                     formats.append({
                         "quality": f.get('format_note') or f.get('resolution') or 'unknown',
                         "ext": f.get('ext', 'mp4'),
@@ -58,7 +60,7 @@ async def extract(data: dict):
                 "author": info.get('uploader'),
                 "thumbnail": info.get('thumbnail'),
                 "duration": info.get('duration'),
-                "formats": formats[:10]
+                "formats": formats[:15] # Return more formats to be safe
             }
     except Exception as e:
         return {"error": f"YouTube Error: {str(e)}"}
