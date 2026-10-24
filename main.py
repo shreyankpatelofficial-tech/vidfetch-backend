@@ -24,19 +24,18 @@ async def extract(data: dict):
     ydl_opts = {
         'quiet': True,
         'no_warnings': True,
-        # Force MP4 format to avoid needing FFmpeg to merge files
+        # Grab pre-merged MP4 so we don't need FFmpeg on Render
         'format': 'best[ext=mp4]/best', 
         
-        # This is the magic that bypasses YouTube's server blocking
+        # Force the iOS client to bypass YouTube's bot detection
         'extractor_args': {
             'youtube': {
-                'player_client': ['ios', 'android', 'tv', 'mweb'],
+                'player_client': ['ios', 'android', 'mweb'],
                 'skip': ['hls', 'dash'],
             }
         },
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept-Language': 'en-US,en;q=0.9',
+            'User-Agent': 'com.google.ios.youtube/19.10.3 (iPhone14,3; U; CPU iOS 15_6 like Mac OS X)',
         }
     }
     
@@ -62,6 +61,5 @@ async def extract(data: dict):
                 "formats": formats[:10]
             }
     except Exception as e:
-        # This prints the exact error to your Render logs so we can see what's wrong
-        print(f"Extraction Error: {str(e)}")
-        return {"error": f"YouTube blocked the request. Details: {str(e)}"}
+        # We are sending the exact error back to the website so you can see it
+        return {"error": f"YouTube Error: {str(e)}"}
