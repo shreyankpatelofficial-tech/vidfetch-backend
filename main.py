@@ -22,16 +22,13 @@ async def extract(data: dict):
     if not url:
         return {"error": "No URL provided"}
     
-    # This finds the cookies.txt file you uploaded to GitHub
     cookie_path = os.path.join(os.path.dirname(__file__), 'cookies.txt')
     
     ydl_opts = {
         'quiet': True,
         'no_warnings': True,
-        'format': 'best[ext=mp4]/best',
-        # Tell yt-dlp to use your cookies
+        'format': 'best', # <--- THIS IS THE FIX: Grabs the best available single file
         'cookiefile': cookie_path,
-        # Force the web client now that we have cookies
         'extractor_args': {
             'youtube': {
                 'player_client': ['web', 'mweb'],
