@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import yt_dlp
+import os
 
 app = FastAPI()
 
@@ -21,21 +22,23 @@ async def extract(data: dict):
     if not url:
         return {"error": "No URL provided"}
     
+    # This finds the cookies.txt file you uploaded to GitHub
+    cookie_path = os.path.join(os.path.dirname(__file__), 'cookies.txt')
+    
     ydl_opts = {
         'quiet': True,
         'no_warnings': True,
-        # Grab pre-merged MP4 so we don't need FFmpeg on Render
-        'format': 'best[ext=mp4]/best', 
-        
-        # Force the iOS client to bypass YouTube's bot detection
+        'format': 'best[ext=mp4]/best',
+        # Tell yt-dlp to use your cookies
+        'cookiefile': cookie_path,
+        # Force the web client now that we have cookies
         'extractor_args': {
             'youtube': {
-                'player_client': ['ios', 'android', 'mweb'],
-                'skip': ['hls', 'dash'],
+                'player_client': ['web', 'mweb'],
             }
         },
         'http_headers': {
-            'User-Agent': 'com.google.ios.youtube/19.10.3 (iPhone14,3; U; CPU iOS 15_6 like Mac OS X)',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         }
     }
     
@@ -61,5 +64,4 @@ async def extract(data: dict):
                 "formats": formats[:10]
             }
     except Exception as e:
-        # We are sending the exact error back to the website so you can see it
         return {"error": f"YouTube Error: {str(e)}"}
